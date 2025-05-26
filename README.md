@@ -104,10 +104,6 @@ Saves the cleaned output to `cleaned_dataset.csv`.
 - `cleaned_RenalDiet.csv` — Cleaned and normalized renal diet data.
 
 ---
-
-## 🔐 Security
-
-Never hardcode your API keys in production. Use:
 ```python
 import os
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
