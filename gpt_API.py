@@ -56,7 +56,7 @@ for meal in meals_list:
     csv_data = [line.split(',') for line in csv_string.splitlines()]
     print(csv_data)
     # Specify the filename for the new CSV file
-    filename = r'C:\Users\47950\PycharmProjects\Master\output5.csv'
+    filename = r'C:\Users\47950\PycharmProjects\Master\output.csv'
 
     # Write the data to a CSV file
     with open(filename, mode='a',newline='') as file:
