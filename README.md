@@ -12,9 +12,15 @@ This project consists of three Python scripts designed to:
 
 ```bash
 .
-├── gpt_API.py          # Recipe generator using GPT-4o-mini
-├── FsaScore2.py        # Nutritional scoring using FSA & WHO guidelines
-├── preprocess.py       # Data cleaning and normalization
+├── gpt_API.py           # Recipe generator using GPT-4o-mini
+├── FsaScore2.py         # Nutritional scoring using FSA & WHO guidelines
+├── Preprocess.py        # Data cleaning and normalization
+├── cleaned_Dairyfree.csv
+├── cleaned_GlutenFree.csv
+├── cleaned_Heart-Healthy.csv
+├── cleaned_MainFile.csv
+├── cleaned_RenalDiet.csv
+├── cleaned_Vegan_data.csv
 └── README.md
 ```
 
