@@ -1,5 +1,5 @@
 
-# 📊 Nutritional Recipe Generator & Evaluator
+# 📊 Recipe generator and evaluator
 
 This project consists of three Python scripts designed to:
 1. Automatically generate recipe data using OpenAI's GPT API.
