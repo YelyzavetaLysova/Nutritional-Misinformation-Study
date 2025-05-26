@@ -4,7 +4,7 @@ import csv
 import pandas as pd
 
 
-OPENAI_API_KEY = "sk-DeHur1QwWeSCuMXTB9YXRfHRJ3eHrffVVzQluDxVRrT3BlbkFJ8iAInNmMivlpSF26cDy2nJCptSRWz0AFtzhhh2npgA"
+OPENAI_API_KEY = "yourAPI_key"
 
 client = OpenAI(api_key=OPENAI_API_KEY)
 
