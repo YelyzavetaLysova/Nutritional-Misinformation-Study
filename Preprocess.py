@@ -13,7 +13,7 @@ print(df.dtypes)
 
 df = df.drop_duplicates(subset='Recipe Name', keep='first')
 
-
+# Fixing any outlier that may occur
 df['Category'] = df['Category'].replace('Dinne', 'Dinner')
 df['Category'] = df['Category'].replace('Luns', 'Lunch')
 df['Category'] = df['Category'].replace('Breakfas', 'Breakfast')
