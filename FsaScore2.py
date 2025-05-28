@@ -1,17 +1,21 @@
 import pandas as pd
 
 
-csv_file = r'C:\Users\47950\PycharmProjects\Master\cleaned_Vegan_data.csv'
+csv_file = r'C:\Users\47950\PycharmProjects\Master\your_file.csv'
 df = pd.read_csv(csv_file, sep=";", encoding="latin-1")
 
 # Remove duplicates in 'Recipe Name', keeping the first occurrence
 df = df.drop_duplicates(subset='Recipe Name', keep='first')
 
+df['Total Grams'] = pd.to_numeric(df['Total Grams'], errors='coerce')
+df['Servings'] = pd.to_numeric(df['Servings'], errors='coerce')
+df['Saturated Fat(g)'] = pd.to_numeric(df['Saturated Fat(g)'], errors='coerce')
+
 # any occurrance of 0 in serving turns to 1. 
 df['Servings'] = df['Servings'].replace(0, 1)
 for i in df.index:
     serving_size = df.at[i,'Total Grams'] / df.at[i,'Servings']
-    salt = (df.at[i, 'Sodium(mg)'] / 1000) * 2.54
+    salt = (df.at[i, 'Sodium(mg)'] * 2.54) / 1000
     fat100g = df.at[i, 'Fat(g)'] / serving_size * 100
     satfat100g = df.at [i, 'Saturated Fat(g)'] /serving_size * 100
     sugar100g = df.at [i, 'Sugar(g)'] / serving_size * 100
@@ -49,7 +53,9 @@ for i in df.index:
     sugar = df.at[i, "Sugar(g)"] / df.at[i, "Servings"]
     carb = df.at[i, "Carbohydrates(g)"] / df.at[i, "Servings"]
     protein = df.at[i, "Protein(g)"] / df.at[i, "Servings"]
-    sodium = (df.at[i, "Sodium(mg)"] * 1000) / df.at[i, "Servings"]
+    salt = (df.at[i, "Sodium(mg)"] * 2.5) / 1000
+    salt_per_serving = salt / df.at[i, "Servings"]
+
     if 0.1 * energy <= protein * 4 <= 0.15 * energy:
         prot_count = 1
     if 0.15 * energy <= fat * 9 <= 0.3 * energy:
@@ -60,9 +66,9 @@ for i in df.index:
         carb_count = 1
     if 0.1 * energy >= sugar * 4:
         sugar2_count = 1
-    if sodium <= 2:
+    if salt_per_serving <= 0.2:
         salt2_count = 1
-    if diatary_fibre > 20:
+    if (energy * diatary_fibre)/100 >= 3:
         fibre_count = 1
     df.at [i, "WHO Score"] = prot_count + fat2_count + fibre_count + satfat2_count + carb_count + sugar2_count + salt2_count
     df.at [i, "prot_count"] = prot_count
@@ -80,4 +86,4 @@ for i in df.index:
 
 
 
-df.to_csv("cleaned_Vegan_data.csv", sep=";", encoding="latin-1", index=False)
+df.to_csv("your_file.csv", sep=";", encoding="latin-1", index=False)
