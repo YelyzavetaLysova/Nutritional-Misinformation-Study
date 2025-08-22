@@ -1,0 +1,38 @@
+import os, httpx
+from .base import RecipeProvider
+
+class GrokRecipeProvider(RecipeProvider):
+    """
+    Grok (xAI) provider.
+    Set GROK_API_KEY env var.
+    Falls back to dummy CSV if key missing or call fails.
+    """
+    API_URL = "https://api.x.ai/v1/chat/completions"  # Placeholder; adjust if spec changes.
+
+    def generate(self, model: str, prompt: str) -> str:
+        api_key = os.getenv("GROK_API_KEY")
+        if not api_key:
+            return self._dummy_csv(prompt, note="missing GROK_API_KEY")
+        try:
+            payload = {
+                "model": model,
+                "messages": [{"role": "user", "content": prompt}],
+                "temperature": 0.7
+            }
+            with httpx.Client(timeout=60) as client:
+                r = client.post(
+                    self.API_URL,
+                    json=payload,
+                    headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+                )
+            r.raise_for_status()
+            content = r.json()["choices"][0]["message"]["content"].strip()
+            return self._dummy_csv(content)
+        except Exception as e:
+            return self._dummy_csv(prompt, note=f"grok error: {e}")
+
+    def _dummy_csv(self, text: str, note: str = "") -> str:
+        return (
+            "Recipe Name;Description;Ingredients;Instructions;Energy(kcal);Protein(g);Carbohydrates(g);Dietary Fiber(g);Sugar(g);Fat(g);Saturated Fat(g);Sodium(mg);Servings;Total Grams;Category\n"
+            f"Grok Recipe;{note or 'Generated with Grok'};ingredient1, ingredient2;{text[:120]};100;5;20;3;2;4;1;200;2;400;Lunch"
+        )

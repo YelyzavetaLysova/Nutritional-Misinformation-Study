@@ -1,61 +1,59 @@
 import pandas as pd
 
+def preprocess_csv(input_path, output_path=None):
+    df = pd.read_csv(input_path, sep=";", encoding="latin-1")
+    df['Category'] = df['Category'].astype(str)
+    print(df.columns)
+    print(df.dtypes)
 
-csv_file =r'C:\Users\47950\PycharmProjects\Master\RenalDiet_data.csv'
+    df = df.drop_duplicates(subset='Recipe Name', keep='first')
 
+    # Fixing any outlier that may occur
+    replacements = {
+        'Dinne': 'Dinner',
+        'Luns': 'Lunch',
+        'Breakfas': 'Breakfast',
+        'Snack': 'Snacks',
+        'Dessert': 'Desserts',
+        'Side Dis': 'Snacks',
+        'Side  ': 'Snacks',
+        'Side Dish  ': 'Snacks',
+        'Sides  ': 'Snacks',
+        'Drinks  ': 'Snacks',
+        'Lunsj': 'Lunch',
+        'Lunsj  ': 'Lunch',
+        'Luns': 'Lunch',
+        'Lunc': 'Lunch',
+        'Brunch  ': 'Lunch',
+        'Brunch': 'Lunch',
+        'Breakfast  ': 'Breakfast',
+        'Dinner  ': 'Dinner',
+        'Lunch  ': 'Lunch',
+        'Snacks  ': 'Snacks',
+        'Desserts  ': 'Desserts',
+        ' Desserts  ': 'Desserts',
+        ' Dessert': 'Desserts',
+        'Lunch ': 'Lunch',
+        'Snacks ': 'Snacks'
+    }
+    df['Category'] = df['Category'].replace(replacements)
 
+    allowed = {'Dinner', 'Lunch', 'Breakfast', 'Desserts', 'Snacks'}
+    for dish in df["Category"]:
+        words = dish.split()
+        for word in words:
+            if word not in allowed:
+                print(f"Word not in allowed list: {word}")
 
-df = pd.read_csv(csv_file, sep=";", encoding="latin-1")
-df['Category'] = df['Category'].astype(str)
-print(df.columns)
-print(df.dtypes)
+    duplicates = df[df['Recipe Name'].duplicated()]
+    print("Duplicate Recipe Names:")
+    print(duplicates)
 
+    if not output_path:
+        output_path = input_path.replace('.csv', '_cleaned.csv')
+    df.to_csv(output_path, sep=";", encoding="latin-1", index=False)
+    print(f"Changes have been saved to '{output_path}'.")
 
-df = df.drop_duplicates(subset='Recipe Name', keep='first')
-
-# Fixing any outlier that may occur
-df['Category'] = df['Category'].replace('Dinne', 'Dinner')
-df['Category'] = df['Category'].replace('Luns', 'Lunch')
-df['Category'] = df['Category'].replace('Breakfas', 'Breakfast')
-df['Category'] = df['Category'].replace('Snack', 'Snacks')
-df['Category'] = df['Category'].replace('Dessert', 'Desserts')
-df['Category'] = df['Category'].replace('Side Dis', 'Snacks')
-df['Category'] = df['Category'].replace('Side  ', 'Snacks')
-df['Category'] = df['Category'].replace('Side Dish  ', 'Snacks')
-df['Category'] = df['Category'].replace('Sides  ', 'Snacks')
-df['Category'] = df['Category'].replace('Drinks  ', 'Snacks')
-df['Category'] = df['Category'].replace('Lunsj', 'Lunch')
-df['Category'] = df['Category'].replace('Lunsj  ', 'Lunch')
-df['Category'] = df['Category'].replace('Luns', 'Lunch')
-df['Category'] = df['Category'].replace('Lunc', 'Lunch')
-df['Category'] = df['Category'].replace('Brunch  ', 'Lunch')
-df['Category'] = df['Category'].replace('Brunch', 'Lunch')
-df['Category'] = df['Category'].replace('Breakfast  ', 'Breakfast')
-df['Category'] = df['Category'].replace('Dinner  ', 'Dinner')
-df['Category'] = df['Category'].replace('Lunch  ', 'Lunch')
-df['Category'] = df['Category'].replace('Snacks  ', 'Snacks')
-df['Category'] = df['Category'].replace('Desserts  ', 'Desserts')
-df['Category'] = df['Category'].replace(' Desserts  ', 'Desserts')
-df['Category'] = df['Category'].replace(' Dessert', 'Desserts')
-df['Category'] = df['Category'].replace('Lunch ', 'Lunch')
-df['Category'] = df['Category'].replace('Snacks ', 'Snacks')
-allowed = {'Dinner', 'Lunch', 'Breakfast', 'Desserts', 'Lunch', "Snacks"}
-
-
-for dish in df["Category"]:
-    words = dish.split()
-    for word in words:
-        if word not in allowed:
-            print(f"Word not in allowed list: {word}")
-
-
-duplicates = df[df['Recipe Name'].duplicated()]
-print("Duplicate Recipe Names:")
-print(duplicates)
-
-
-output_file = "cleaned_RenalDiet.csv"
-df.to_csv(output_file, sep=";", encoding="latin-1", index=False)
-
-print(f"Changes have been saved to '{output_file}'.")
+# Example usage:
+# preprocess_csv("RenalDiet_data.csv")
 

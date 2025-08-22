@@ -1,0 +1,9 @@
+from .base import RecipeProvider
+
+class DummyRecipeProvider(RecipeProvider):
+    def generate(self, model: str, prompt: str) -> str:
+        # Return a fixed CSV string for testing
+        return (
+            "Recipe Name;Description;Ingredients;Instructions;Energy(kcal);Protein(g);Carbohydrates(g);Dietary Fiber(g);Sugar(g);Fat(g);Saturated Fat(g);Sodium(mg);Servings;Total Grams;Category\n"
+            "Test Recipe;A test dish.;ingredient1, ingredient2;Step 1: Do something.;100;5;20;3;2;4;1;200;2;400;Lunch"
+        )

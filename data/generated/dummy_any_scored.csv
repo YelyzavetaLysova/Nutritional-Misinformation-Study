@@ -1,0 +1,2 @@
+Recipe Name;Description;Ingredients;Instructions;Energy(kcal);Protein(g);Carbohydrates(g);Dietary Fiber(g);Sugar(g);Fat(g);Saturated Fat(g);Sodium(mg);Servings;Total Grams;Category;Fsa_new;fat_count;satfat_count;sugar_count;salt_count;WHO Score;prot_count;fat2_count;fibre_count;carb_count;satfat2_count;sugar2_count;salt2_count
+Test Recipe;A test dish.;ingredient1, ingredient2;Step 1: Do something.;100;5;20;3;2;4;1;200;2;400;Lunch;4.0;1.0;1.0;1.0;1.0;2.0;0.0;0.0;0.0;0.0;1.0;1.0;0.0
