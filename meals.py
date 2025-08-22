@@ -1,3 +1,63 @@
+from dataclasses import dataclass
+from typing import List, Dict
+
+@dataclass
+class Recipe:
+    name: str
+    description: str
+    ingredients: List[str]
+    instructions: List[str]
+    nutrition: Dict[str, float]
+    category: str
+
+BREAKFAST_TEMPLATES = [
+    Recipe(
+        name="Healthy Oatmeal Bowl",
+        description="A nutritious breakfast bowl with oats and fruits",
+        ingredients=["oats", "milk", "banana", "honey", "cinnamon"],
+        instructions=["Boil milk", "Add oats", "Cook for 5 minutes", "Top with sliced banana and honey"],
+        nutrition={
+            "Energy(kcal)": 350,
+            "Protein(g)": 12,
+            "Carbohydrates(g)": 65,
+            "Dietary Fiber(g)": 8,
+            "Sugar(g)": 15,
+            "Fat(g)": 6,
+            "Saturated Fat(g)": 2,
+            "Sodium(mg)": 100
+        },
+        category="Breakfast"
+    ),
+    # Add more breakfast templates...
+]
+
+LUNCH_TEMPLATES = [
+    Recipe(
+        name="Quinoa Salad Bowl",
+        description="Fresh quinoa salad with vegetables",
+        ingredients=["quinoa", "cucumber", "tomatoes", "olive oil", "lemon juice"],
+        instructions=["Cook quinoa", "Chop vegetables", "Mix ingredients", "Add dressing"],
+        nutrition={
+            "Energy(kcal)": 400,
+            "Protein(g)": 15,
+            "Carbohydrates(g)": 50,
+            "Dietary Fiber(g)": 7,
+            "Sugar(g)": 5,
+            "Fat(g)": 15,
+            "Saturated Fat(g)": 2,
+            "Sodium(mg)": 300
+        },
+        category="Lunch"
+    ),
+    # Add more lunch templates...
+]
+
+RECIPE_TEMPLATES = {
+    "Breakfast": BREAKFAST_TEMPLATES,
+    "Lunch": LUNCH_TEMPLATES,
+    # Add more categories...
+}
+
 meals_list = ["Angel Food Cakes","Antipasti", "Appetizers and Snacks", "Apple Pie", "Artichoke Dips", "Bagels", "Baked Beans", "Banana Breads", "Bar Cookies", 
     "Beef Recipes", "Beef Stews", "Beef Stroganoff", "Beef Tenderloin", "Biscotti", "Biscuits", "Blintzes", "Blondies", "Blueberry Pie", 
     "Borscht", "Breads", "Breakfast Burritos", "Breakfast Casseroles", "Breakfast Potatoes", "Brownies", "Bruschetta", "Buffalo Chicken Dips", 
