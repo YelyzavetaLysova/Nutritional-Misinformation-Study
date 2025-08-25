@@ -1,5 +1,9 @@
-import os, httpx
+import os
+import httpx
+from typing import Dict, Any
+from tenacity import retry, stop_after_attempt, wait_exponential
 from .base import RecipeProvider
+from prompts import SYSTEM_PROMPT, get_recipe_prompt  # Changed from relative to absolute
 
 class GeminiRecipeProvider(RecipeProvider):
     """
@@ -7,21 +11,27 @@ class GeminiRecipeProvider(RecipeProvider):
     Set GEMINI_API_KEY env var.
     Uses generative language API (placeholder endpoint).
     """
-    API_URL = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+    API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateText"
 
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
     def generate(self, model: str, prompt: str) -> str:
         api_key = os.getenv("GEMINI_API_KEY")
         if not api_key:
             return self._dummy_csv(prompt, note="missing GEMINI_API_KEY")
+
         try:
-            url = self.API_URL.format(model=model)
-            payload = {"contents": [{"parts": [{"text": prompt}]}]}
-            with httpx.Client(timeout=60) as client:
-                r = client.post(f"{url}?key={api_key}", json=payload)
-            r.raise_for_status()
-            data = r.json()
-            text = data["candidates"][0]["content"]["parts"][0]["text"]
-            return self._dummy_csv(text)
+            with httpx.Client(timeout=self.timeout) as client:
+                r = client.post(
+                    f"{self.API_URL}?key={api_key}",
+                    json={
+                        "contents": [
+                            {"role": "system", "parts": [{"text": SYSTEM_PROMPT}]},
+                            {"role": "user", "parts": [{"text": get_recipe_prompt(prompt)}]}
+                        ]
+                    }
+                )
+                r.raise_for_status()
+                return r.json()["candidates"][0]["content"]["parts"][0]["text"]
         except Exception as e:
             return self._dummy_csv(prompt, note=f"gemini error: {e}")
 

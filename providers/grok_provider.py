@@ -1,5 +1,9 @@
-import os, httpx
+import os
+import httpx
+from typing import Dict, Any
+from tenacity import retry, stop_after_attempt, wait_exponential
 from .base import RecipeProvider
+from prompts import SYSTEM_PROMPT, get_recipe_prompt  # Changed from relative to absolute import
 
 class GrokRecipeProvider(RecipeProvider):
     """
@@ -7,27 +11,33 @@ class GrokRecipeProvider(RecipeProvider):
     Set GROK_API_KEY env var.
     Falls back to dummy CSV if key missing or call fails.
     """
-    API_URL = "https://api.x.ai/v1/chat/completions"  # Placeholder; adjust if spec changes.
+    API_URL = "https://api.grok.ai/v1/chat/completions"  # Update with actual Grok API URL
 
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
     def generate(self, model: str, prompt: str) -> str:
         api_key = os.getenv("GROK_API_KEY")
         if not api_key:
             return self._dummy_csv(prompt, note="missing GROK_API_KEY")
+
         try:
-            payload = {
-                "model": model,
-                "messages": [{"role": "user", "content": prompt}],
-                "temperature": 0.7
-            }
-            with httpx.Client(timeout=60) as client:
+            with httpx.Client(timeout=self.timeout) as client:
                 r = client.post(
                     self.API_URL,
-                    json=payload,
-                    headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+                    json={
+                        "model": model,
+                        "messages": [
+                            {"role": "system", "content": SYSTEM_PROMPT},
+                            {"role": "user", "content": get_recipe_prompt(prompt)}
+                        ],
+                        "temperature": 0.7
+                    },
+                    headers={
+                        "Authorization": f"Bearer {api_key}",
+                        "Content-Type": "application/json"
+                    }
                 )
-            r.raise_for_status()
-            content = r.json()["choices"][0]["message"]["content"].strip()
-            return self._dummy_csv(content)
+                r.raise_for_status()
+                return r.json()["choices"][0]["message"]["content"]
         except Exception as e:
             return self._dummy_csv(prompt, note=f"grok error: {e}")
 

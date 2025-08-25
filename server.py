@@ -1,9 +1,9 @@
 import os
-from typing import Optional
+from typing import Optional, Dict, Any
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 from providers import get_recipe_provider, get_preprocess_provider, get_score_provider
-from meals import meals_list, prompt_template
+from meals import meals_list, get_recipe_prompt
 
 app = FastAPI()
 
@@ -12,6 +12,13 @@ class GenerateRequest(BaseModel):
     model: str
     dataset: str
 
+    @validator('provider')
+    def validate_provider(cls, v):
+        allowed = {'gpt5', 'grok', 'gemini', 'deepseek', 'perplexity', 'dummy', 'openai'}
+        if v.lower() not in allowed:
+            raise ValueError(f'Provider must be one of {allowed}')
+        return v.lower()
+
 def save_generated_data(
     data: str,
     provider: str,
@@ -19,7 +26,7 @@ def save_generated_data(
     dataset: str,
     status: str = "raw",
     output_dir: str = "data/generated"
-):
+) -> str:
     os.makedirs(output_dir, exist_ok=True)
     dataset_slug = dataset.lower().replace(" ", "-")
     filename = f"{dataset_slug}_{provider}_{model}_{status}_.csv"
@@ -33,21 +40,29 @@ async def generate_recipes(request: GenerateRequest):
     provider = get_recipe_provider(request.provider)
     if not provider:
         raise HTTPException(status_code=400, detail="Unknown recipe provider")
-    results = {}
+    
+    results: Dict[str, Any] = {}
     for meal in meals_list:
-        prompt = prompt_template.format(meal=meal)
         try:
+            prompt = get_recipe_prompt(meal)
             generated = provider.generate(request.model, prompt)
-            results[meal] = generated
-            save_generated_data(
+            filepath = save_generated_data(
                 generated,
                 provider=request.provider,
                 model=request.model,
                 dataset=request.dataset,
                 status="raw"
             )
+            results[meal] = {
+                "status": "success",
+                "filepath": filepath,
+                "recipes_count": len(generated.split('\n')) - 1  # Exclude header
+            }
         except Exception as e:
-            results[meal] = f"Error: {e}"
+            results[meal] = {
+                "status": "error",
+                "error": str(e)
+            }
     return results
 
 class PreprocessRequest(BaseModel):

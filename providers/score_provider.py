@@ -1,9 +1,10 @@
 import os
 import pandas as pd
+from typing import Optional, Dict, Any
 from .base import ScoreProvider
 
 class FsaWhoScoreProvider(ScoreProvider):
-    def score(self, input_path: str, output_path: str | None = None) -> dict:
+    def score(self, input_path: str, output_path: Optional[str] = None) -> Dict[str, Any]:
         try:
             df = pd.read_csv(input_path, sep=";", encoding="latin-1")
             df = df.drop_duplicates(subset='Recipe Name', keep='first')
@@ -77,19 +78,10 @@ class FsaWhoScoreProvider(ScoreProvider):
                 df.at[i, 'sugar2_count'] = sugar2_count
                 df.at[i, 'salt2_count'] = salt2_count
 
-            if not output_path:
-                base, _ = os.path.splitext(input_path)
-                if base.endswith("_preprocessed"):
-                    base = base[:-13]
-                output_path = base.replace("_raw", "") + "_scored.csv"
-
-            os.makedirs(os.path.dirname(output_path), exist_ok=True)
-            df.to_csv(output_path, sep=";", encoding="latin-1", index=False)
-
-            return {
-                "status": "success",
-                "output_path": output_path,
-                "recipes_scored": len(df)
-            }
+            if output_path:
+                df.to_csv(output_path, sep=";", index=False)
+                return {"output_file": output_path}
+            
+            return {"scores": df.to_dict('records')}
         except Exception as e:
             return {"status": "error", "message": str(e)}
