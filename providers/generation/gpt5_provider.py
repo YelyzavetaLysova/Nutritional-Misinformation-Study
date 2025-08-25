@@ -2,10 +2,12 @@ import os
 import httpx
 from typing import Dict, Any
 from tenacity import retry, stop_after_attempt, wait_exponential
-from .base import RecipeProvider
-from prompts import SYSTEM_PROMPT, get_recipe_prompt  # Changed to absolute import
+from .base import RecipeProvider  # Changed to relative import
+from prompts import SYSTEM_PROMPT, get_recipe_prompt
 
 class GPT5RecipeProvider(RecipeProvider):
+    """OpenAI GPT provider implementation"""
+    
     API_URL = "https://api.openai.com/v1/chat/completions"
     
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))

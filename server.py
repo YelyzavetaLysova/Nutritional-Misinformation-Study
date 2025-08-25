@@ -1,11 +1,17 @@
 import os
-from typing import Optional, Dict, Any
-from fastapi import FastAPI, HTTPException
+from typing import Optional, Dict, Any, List
+from fastapi import FastAPI, HTTPException, Request
+from starlette.middleware.base import BaseHTTPMiddleware
 from pydantic import BaseModel, validator
-from providers import get_recipe_provider, get_preprocess_provider, get_score_provider
+from providers.generation import get_recipe_provider
+from providers.preprocessing import get_preprocess_provider
+from providers.scoring import get_score_provider
+from providers.validation import get_validation_provider
+from providers.image import get_image_provider
+from providers.logging import get_logging_provider
 from meals import meals_list, get_recipe_prompt
 
-app = FastAPI()
+app = FastAPI(title="Recipe Generation API")
 
 class GenerateRequest(BaseModel):
     provider: str
@@ -83,3 +89,42 @@ class ScoreRequest(BaseModel):
 async def score_endpoint(request: ScoreRequest):
     provider = get_score_provider()
     return provider.score(request.input_path, request.output_path)
+
+# Add middleware
+class LoggingMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        logging_provider = get_logging_provider()
+        try:
+            response = await call_next(request)
+            logging_provider.log_request(
+                path=request.url.path,
+                method=request.method,
+                status_code=response.status_code
+            )
+            return response
+        except Exception as e:
+            logging_provider.log_error(str(e))
+            raise
+
+app.add_middleware(LoggingMiddleware)
+
+# Add new endpoints
+class ValidationRequest(BaseModel):
+    input_path: str
+    output_path: Optional[str] = None
+
+class ImageGenerationRequest(BaseModel):
+    recipe_data: Dict[str, Any]
+    output_dir: Optional[str] = "data/images"
+
+@app.post("/validate")
+async def validate_endpoint(request: ValidationRequest):
+    provider = get_validation_provider()
+    validation_result = provider.validate(request.input_path)
+    return {"validation_result": validation_result}
+
+@app.post("/generate-images")
+async def generate_images(request: ImageGenerationRequest):
+    provider = get_image_provider()
+    image_paths = provider.generate_images(request.recipe_data)
+    return {"image_paths": image_paths}
